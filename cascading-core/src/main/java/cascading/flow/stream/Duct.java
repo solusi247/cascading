@@ -20,11 +20,35 @@
 
 package cascading.flow.stream;
 
+import cascading.flow.FlowProcess;
+import cascading.pipe.Pipe;
+
 /**
  *
  */
 public abstract class Duct<Incoming, Outgoing>
   {
+
+    protected FlowProcess flowProcess;
+    protected Pipe pipe;
+
+    public FlowProcess getFlowProcess() {
+        return flowProcess;
+    }
+
+    public void setFlowProcess(FlowProcess flowProcess) {
+        this.flowProcess = flowProcess;
+    }
+
+    public Pipe getPipe() {
+        return pipe;
+    }
+
+    public void setPipe(Pipe pipe) {
+        this.pipe = pipe;
+    }
+
+
   protected Duct<Outgoing, ?> next;
 
   Duct()

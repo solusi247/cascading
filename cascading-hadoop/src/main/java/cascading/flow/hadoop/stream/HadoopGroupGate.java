@@ -29,6 +29,7 @@ import cascading.flow.hadoop.HadoopGroupByClosure;
 import cascading.flow.stream.Duct;
 import cascading.flow.stream.SpliceGate;
 import cascading.flow.stream.StreamGraph;
+import cascading.operation.BaseOperation;
 import cascading.pipe.Splice;
 import cascading.tap.hadoop.util.MeasuredOutputCollector;
 import cascading.tuple.Tuple;
@@ -87,6 +88,10 @@ public abstract class HadoopGroupGate extends SpliceGate
     keyEntry.setTuple( closure.getGroupTuple( key ) );
     tupleEntryIterator.reset( values );
 
+
+
+    next.setFlowProcess(flowProcess);
+    next.setPipe(this.getSplice());
     next.receive( this, grouping );
     }
 

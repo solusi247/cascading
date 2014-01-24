@@ -26,6 +26,7 @@ import cascading.flow.SliceCounters;
 import cascading.flow.hadoop.HadoopGroupByClosure;
 import cascading.flow.stream.Duct;
 import cascading.flow.stream.DuctException;
+import cascading.operation.BaseOperation;
 import cascading.pipe.GroupBy;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -36,9 +37,11 @@ import cascading.tuple.io.TuplePair;
  */
 public class HadoopGroupByGate extends HadoopGroupGate
   {
+   GroupBy groupBy;
   public HadoopGroupByGate( FlowProcess flowProcess, GroupBy groupBy, Role role )
     {
     super( flowProcess, groupBy, role );
+    this.groupBy=groupBy;
     }
 
   @Override
@@ -64,6 +67,8 @@ public class HadoopGroupByGate extends HadoopGroupGate
       {
       collector.collect( groupKey, valuesTuple );
       flowProcess.increment( SliceCounters.Tuples_Written, 1 );
+      flowProcess.increment(this.groupBy.getLabel(), BaseOperation.INPUTRECORD, 1);
+      flowProcess.increment(this.groupBy.getLabel(), BaseOperation.OUTPUTRECORD, 1);
       }
     catch( OutOfMemoryError error )
       {

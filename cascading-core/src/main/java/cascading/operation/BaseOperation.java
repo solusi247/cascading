@@ -46,6 +46,20 @@ public abstract class BaseOperation<Context> implements Serializable, Operation<
   protected Fields fieldDeclaration;
   /** Field numArgs */
   protected int numArgs = ANY;
+
+  protected String label="";
+  public static final String INPUTRECORD="InputRecord";
+  public static final String OUTPUTRECORD="OutputRecord";
+  public static final String REJECTRECORD="RejectRecord";
+  protected boolean splitted=false;
+
+   public boolean isSplitted() {
+        return splitted;
+    }
+
+    public void setSplitted(boolean splitted) {
+        this.splitted = splitted;
+    }
   /** Field trace */
   protected final String trace = Util.captureDebugTrace( getClass() );
 
@@ -231,4 +245,27 @@ public abstract class BaseOperation<Context> implements Serializable, Operation<
     result = 31 * result + numArgs;
     return result;
     }
+  
+  public void setLabel(String label){
+      this.label=label;
+  }
+  
+  public String getLabel(){
+      return label;
+  }
+
+  public void incrementInputCounter(FlowProcess flowProcess){
+      flowProcess.increment(label, BaseOperation.INPUTRECORD, 1);
+  }
+  public void incrementOutputCounter(FlowProcess flowProcess){
+      flowProcess.increment(label, BaseOperation.OUTPUTRECORD, 1);
+  }
+
+  public void incrementInputCounter(FlowProcess flowProcess, int amount){
+      flowProcess.increment(label, BaseOperation.INPUTRECORD, amount);
+  }
+  public void incrementOutputCounter(FlowProcess flowProcess,int amount){
+      flowProcess.increment(label, BaseOperation.OUTPUTRECORD, amount);
+  }
+
   }

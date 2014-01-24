@@ -32,10 +32,13 @@ import cascading.flow.FlowProcess;
 import cascading.flow.FlowSession;
 import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.tap.Tap;
+import cascading.tap.hadoop.io.MultiInputSplit;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
@@ -326,4 +329,27 @@ public class HadoopFlowProcess extends FlowProcess<JobConf>
     {
     return HadoopUtil.mergeConf( defaultConfig, map, false );
     }
+
+  public String getInputFile( )
+    {
+      String result="";
+      InputSplit is=reporter.getInputSplit();
+
+      if (is instanceof FileSplit){
+          result=((FileSplit)is).getPath().getName();
+      }else if (is instanceof MultiInputSplit){
+          result=((MultiInputSplit)is).getCurrentTapSourcePath(jobConf);
+          if (result!=null){
+             int pos=result.lastIndexOf("/");
+             if (pos>=0){
+                result=result.substring(pos+1);
+             }
+          }
+      }
+      if (result==null){
+          return "-";
+      }
+      return result;
+    }
+
   }

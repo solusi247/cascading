@@ -39,6 +39,9 @@ import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.hadoop.TupleSerialization;
 import cascading.util.Util;
+import java.util.ArrayList;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -351,8 +354,150 @@ public class Hfs extends Tap<JobConf, RecordReader, OutputCollector>
     return getPath().makeQualified( getFileSystem( conf ) ).toString();
     }
 
+  //ADDITION METHOD
+  public ArrayList<String> getReferenceFiles(String ref){
+      ArrayList<String> result=new ArrayList<String>();
+      FSDataInputStream fsis = null;
+      Configuration conf = new Configuration();
+      try{
+          FileSystem fileSystem = FileSystem.get(conf);
+          Path path = new Path(ref);
+          if (fileSystem.isFile(path)){
+                fsis = fileSystem.open(path);
+                String line = null;
+                if (fsis==null){
+                   return result;
+                }
+                while ((line = fsis.readLine()) != null) {
+                    if (line.trim().equals("")){
+                        continue;
+                    }
+                    String[] tokens = line.split(",");
+                    for (int i=0; i<tokens.length; i++){
+                        if (fileSystem.exists(new Path(tokens[i].trim()))){
+                           ArrayList<String> subdir=this.getSubDirectory(tokens[i]);
+                           if (subdir.size()==0){
+                               result.add(tokens[i]);
+                            }else{
+                               for (int j=0;j<subdir.size(); j++){
+                                   result.add(subdir.get(j));
+                               }
+                            }
+                        }
+                    }
+
+               }
+               fsis.close();
+            }
+      }catch(Exception e){
+
+      }
+      return result;
+  }
+  //ADDITION METHOD
+  public String getFullIdentifier( JobConf conf,String myPath )
+    {
+       Path v_path=new Path(myPath);
+       return v_path.makeQualified( getFileSystem( conf ) ).toString();
+
+    }
+  //ADDITION METHOD
+  public ArrayList<String> getSubDirectory(String myPath){
+      ArrayList<String> list=new ArrayList<String>();
+       try{
+               Configuration config= new Configuration();
+               FileSystem hdfs = FileSystem.get(config);
+               Path inputPath = new Path(myPath);
+               if(hdfs.exists(inputPath)){
+                  if (hdfs.isFile(inputPath)){
+
+                  }else{
+                       FileStatus[] listStats=hdfs.listStatus(inputPath);
+                       for (int i=0; i<listStats.length; i++){
+                          FileStatus fStats=listStats[i];
+                          if (fStats.isDir()){
+                             if (!fStats.getPath().getName().startsWith("_")){
+                                 String fullName=myPath+"/"+fStats.getPath().getName();
+                                 list.add(fullName);
+                              }
+                          }
+                       }
+                  }
+               }
+      }catch(Exception e){
+
+      }
+      return list;
+  }
   @Override
   public void sourceConfInit( FlowProcess<JobConf> process, JobConf conf )
+    {
+
+       String v_str_path=this.getPath().toString();
+       if (v_str_path.contains("?")){
+          String[] v_arr=v_str_path.split("\\?");
+          String refFile=v_arr[1];
+          ArrayList<String> dirList=this.getReferenceFiles(refFile);
+          if (dirList.size()>0){
+              for (int i=0; i<dirList.size(); i++){
+                  Path qualifiedPath = new Path( getFullIdentifier( conf,dirList.get(i) ) );
+
+                  for( Path exitingPath : FileInputFormat.getInputPaths( conf ) )
+                  {
+                     if( exitingPath.equals( qualifiedPath ) )
+                       throw new TapException( "may not add duplicate paths, found: " + exitingPath );
+                  }
+
+                  FileInputFormat.addInputPath( conf, qualifiedPath );
+
+                  makeLocal( conf, qualifiedPath, "forcing job to local mode, via source: " );
+                }
+          }
+
+       }else{
+          ArrayList<String> dirList=this.getSubDirectory(v_str_path);
+          if (dirList.size()>0){
+              for (int i=0; i<dirList.size(); i++){
+                  Path qualifiedPath = new Path( getFullIdentifier( conf,dirList.get(i) ) );
+
+                  for( Path exitingPath : FileInputFormat.getInputPaths( conf ) )
+                  {
+                     if( exitingPath.equals( qualifiedPath ) )
+                       throw new TapException( "may not add duplicate paths, found: " + exitingPath );
+                  }
+
+                  FileInputFormat.addInputPath( conf, qualifiedPath );
+
+                  makeLocal( conf, qualifiedPath, "forcing job to local mode, via source: " );
+                }
+          }else{
+
+             String[] arr_path=v_str_path.split(",");
+             for (int i=0; i<arr_path.length; i++){
+                Path qualifiedPath = new Path( getFullIdentifier( conf,arr_path[i] ) );
+
+                for( Path exitingPath : FileInputFormat.getInputPaths( conf ) )
+                {
+                   if( exitingPath.equals( qualifiedPath ) )
+                     throw new TapException( "may not add duplicate paths, found: " + exitingPath );
+                }
+
+               FileInputFormat.addInputPath( conf, qualifiedPath );
+
+               makeLocal( conf, qualifiedPath, "forcing job to local mode, via source: " );
+       
+            }
+         }
+      }
+
+       super.sourceConfInit( process, conf );
+       
+       TupleSerialization.setSerializations( conf ); // allows Hfs to be used independent of Flow
+
+    }
+
+  //@Override
+  public void sourceConfInitOrg( FlowProcess<JobConf> process, JobConf conf )
     {
     Path qualifiedPath = new Path( getFullIdentifier( conf ) );
 

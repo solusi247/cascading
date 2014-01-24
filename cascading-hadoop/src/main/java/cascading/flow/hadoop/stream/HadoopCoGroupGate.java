@@ -31,6 +31,7 @@ import cascading.flow.stream.Duct;
 import cascading.flow.stream.DuctException;
 import cascading.flow.stream.SpliceGate;
 import cascading.flow.stream.StreamGraph;
+import cascading.operation.BaseOperation;
 import cascading.pipe.CoGroup;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -42,11 +43,13 @@ import cascading.tuple.io.TuplePair;
  */
 public class HadoopCoGroupGate extends HadoopGroupGate
   {
+    CoGroup coGroup;
   private final Map<Duct, Integer> posMap = new IdentityHashMap<Duct, Integer>();
 
   public HadoopCoGroupGate( FlowProcess flowProcess, CoGroup coGroup, SpliceGate.Role role )
     {
     super( flowProcess, coGroup, role );
+    this.coGroup=coGroup;
     }
 
   @Override
@@ -84,6 +87,7 @@ public class HadoopCoGroupGate extends HadoopGroupGate
       {
       collector.collect( new IndexTuple( pos, groupKey ), new IndexTuple( pos, valuesTuple ) );
       flowProcess.increment( SliceCounters.Tuples_Written, 1 );
+      flowProcess.increment(this.coGroup.getLabel(), BaseOperation.INPUTRECORD, 1);
       }
     catch( OutOfMemoryError error )
       {

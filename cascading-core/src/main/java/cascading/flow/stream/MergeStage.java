@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cascading.flow.FlowElement;
 import cascading.flow.FlowProcess;
+import cascading.pipe.Pipe;
 import cascading.tuple.TupleEntry;
 
 /**
@@ -38,6 +39,9 @@ public class MergeStage extends ElementStage<TupleEntry, TupleEntry> implements 
   public MergeStage( FlowProcess flowProcess, FlowElement flowElement )
     {
     super( flowProcess, flowElement );
+
+     this.setPipe((Pipe)flowElement);
+     this.setFlowProcess(flowProcess);
     }
 
   @Override

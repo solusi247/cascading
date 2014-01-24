@@ -33,6 +33,7 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -86,6 +87,7 @@ public class TextLine extends Scheme<JobConf, RecordReader, OutputCollector, Obj
   Compress sinkCompression = Compress.DISABLE;
 
   String charsetName = DEFAULT_CHARSET;
+  String indexGroup="";
 
   /**
    * Creates a new TextLine instance that sources "offset" and "line" fields, and sinks all incoming fields, where
@@ -96,6 +98,12 @@ public class TextLine extends Scheme<JobConf, RecordReader, OutputCollector, Obj
     super( DEFAULT_SOURCE_FIELDS );
     }
 
+  public TextLine(String idxGrp)
+    {
+    super( DEFAULT_SOURCE_FIELDS );
+    indexGroup=idxGrp;
+    }
+    
   /**
    * Creates a new TextLine instance that sources "offset" and "line" fields, and sinks all incoming fields, where
    * "offset" is the byte offset in the input file.

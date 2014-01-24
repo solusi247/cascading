@@ -68,6 +68,7 @@ public class Pipe implements FlowElement, Serializable
   protected ConfigDef configDef;
 
   protected ConfigDef stepConfigDef;
+  protected String label;
 
   /** Field trace */
   private final String trace = Util.captureDebugTrace( getClass() );
@@ -412,4 +413,13 @@ public class Pipe implements FlowElement, Serializable
     {
     buffer.append( getClass().getSimpleName() ).append( "('" ).append( getName() ).append( "')" );
     }
+
+  public void setLabel(String label){
+      this.label=label;
+  }
+
+  public String getLabel(){
+      return label;
+  }
+
   }

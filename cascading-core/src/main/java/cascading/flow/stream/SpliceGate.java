@@ -76,6 +76,10 @@ public abstract class SpliceGate extends Gate<TupleEntry, Grouping<TupleEntry, T
   protected TupleEntryChainIterator tupleEntryIterator;
   protected TupleEntry keyEntry;
 
+  public Splice getSplice(){
+      return this.splice;
+  }
+
   public SpliceGate( FlowProcess flowProcess, Splice splice )
     {
     this.splice = splice;

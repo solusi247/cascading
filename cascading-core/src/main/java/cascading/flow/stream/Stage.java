@@ -20,6 +20,8 @@
 
 package cascading.flow.stream;
 
+import cascading.operation.BaseOperation;
+
 /**
  *
  */
@@ -27,6 +29,11 @@ public class Stage<Incoming, Outgoing> extends Duct<Incoming, Outgoing>
   {
   public void receive( Duct previous, Incoming incoming )
     {
+    if (this.flowProcess!=null & this.pipe!=null){
+       //System.out.println(this.getClass().getName()+" recive :"+this.getPipe().getLabel());
+       this.flowProcess.increment(this.getPipe().getLabel(), BaseOperation.INPUTRECORD, 1);
+       this.flowProcess.increment(this.getPipe().getLabel(), BaseOperation.OUTPUTRECORD, 1);
+    }
     next.receive( this, (Outgoing) incoming );
     }
   }

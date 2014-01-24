@@ -20,6 +20,7 @@
 
 package cascading.flow.stream;
 
+import cascading.operation.BaseOperation;
 import java.util.Iterator;
 
 /**
@@ -41,8 +42,17 @@ public class OpenDuct<Incoming, Outgoing> extends Duct<Grouping<Incoming, Iterat
   @Override
   public void receive( Duct previous, Grouping<Incoming, Iterator<Incoming>> grouping )
     {
-    while( grouping.iterator.hasNext() )
-      next.receive( previous, (Outgoing) grouping.iterator.next() );
+    while( grouping.iterator.hasNext() ){
+        next.receive( previous, (Outgoing) grouping.iterator.next() );
+
+         if (this.flowProcess!=null ){
+             if (pipe.getLabel().startsWith("JOI_")){
+                 this.flowProcess.increment(pipe.getLabel(), BaseOperation.OUTPUTRECORD, 1);
+             }else{
+                 //System.out.println("LABEL :"+pipe.getLabel());
+             }
+          }
+     }
     }
 
   @Override
